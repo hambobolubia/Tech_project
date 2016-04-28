@@ -17,6 +17,9 @@ int serNum2;
 int serNum3;
 int serNum4;
 int I2C_Address = 4;
+int byteRead = 0;
+
+char recivedInfo[5];
 
 const byte ROWS = 4; //four rows
 const byte COLS = 4; //four columns
@@ -39,6 +42,7 @@ int card_One[5] = {21, 111, 159, 175, 74}; //card name is sunfounder
 
 
 char inputCode[6] = {'0', '0', '0', '0', '0', '0'};
+char user[9];
 
 //initialize an instance of class NewKeypad
 Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
@@ -67,6 +71,7 @@ void loop()
         lcd.setCursor(0,1);
         lcd.print("Hello SUNFOUNDER");
         openDoor();
+        user[9] = 'Card01';
       }
       else 
       {
@@ -117,6 +122,7 @@ void readKey()
           lcd.setCursor(0, 1);
           lcd.print(" Please Come In ");
           openDoor();
+          user[9] = 'Keypad01';
           delay(2000);
           lcd.clear();
           lcd.setCursor(0,0);
@@ -156,4 +162,41 @@ void closeDoor(){
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, LOW);
   pinMode(relayPin, INPUT);
+}
+void requestEvent()
+{
+  Wire.write(user);
+}
+void receiveEvent(int test)
+{
+  if (Wire.available()){
+    while (Wire.available()){
+      recivedInfo[byteRead] = Wire.read();
+      byteRead++;
+    }
+    if(recivedInfo[0] == 'F' && recivedInfo[1] == 'I' && recivedInfo[2] == 'R' && recivedInfo[3] == 'E'){
+      while(1){
+        pinMode(relayPin, OUTPUT);
+        digitalWrite(relayPin, HIGH);
+        delay(100);
+        Wire.beginTransmission(0); // transmit to device #0
+        Wire.write("FIRE");        // sends five bytes
+        Wire.endTransmission();    // stop transmitting        
+      }
+    }
+    if(recivedInfo[0] == 'O' && recivedInfo[1] == 'P' && recivedInfo[2] == 'E' && recivedInfo[3] == 'N'){
+      openDoor();      
+    }
+    if(recivedInfo[0] == 'S' && recivedInfo[1] == 'T' && recivedInfo[2] == 'O' && recivedInfo[3] == 'P'){
+      while(1){
+        pinMode(relayPin, OUTPUT);
+        digitalWrite(relayPin, HIGH);
+        delay(100);
+        Wire.beginTransmission(0); // transmit to device #0
+        Wire.write("STOP");        // sends five bytes
+        Wire.endTransmission();    // stop transmitting        
+      }
+    }
+  }
+  byteRead = 0;
 }
