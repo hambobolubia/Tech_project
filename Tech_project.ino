@@ -1,3 +1,6 @@
+/**
+CHECK PIN 3 PINMODE MAY CASUSE PROBLEMS
+**/
 #include <Keypad.h>
 #include <SPI.h>
 #include <RFID.h>
