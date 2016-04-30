@@ -1,5 +1,5 @@
 /**
-CHECK PIN 3 PINMODE MAY CASUSE PROBLEMS
+TODO compleatly rewrite the readkey function getting unxepected behaviour
 **/
 #include <Keypad.h>
 #include <SPI.h>
@@ -8,7 +8,7 @@ CHECK PIN 3 PINMODE MAY CASUSE PROBLEMS
 #include <Wire.h>
 #define SS_PIN 10
 #define RST_PIN 9
-#define relayPin 16
+#define relayPin 14
 RFID rfid(SS_PIN, RST_PIN);
 
 LiquidCrystal_I2C lcd(0x27,16,2);
@@ -51,7 +51,7 @@ Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS
 
 void setup()
 { 
-  Serial.begin(9600);
+  //Serial.begin(9600);
   Wire.begin(I2C_Address);
   lcd.begin(16, 2);
   SPI.begin(); 
@@ -62,8 +62,15 @@ void setup()
   Wire.onReceive(receiveEvent);  
   lcd.backlight(); 
 }
-
 void loop()
+{  
+  char customKey = customKeypad.getKey();
+//  if (customKey){
+//    if ()
+//  }
+  readKey();
+}
+void readRfid()
 { 
   if (rfid.isCard()) 
   {
@@ -77,7 +84,7 @@ void loop()
         user[9] = 'Card01';
         Serial.print(rfid.serNum[4]);
       }
-      if(rfid.serNum[0] == 8 && rfid.serNum[1] == 110 && rfid.serNum[2] == 226 && rfid.serNum[3] == 118 && rfid.serNum[4] == 242)
+      else if(rfid.serNum[0] == 8 && rfid.serNum[1] == 110 && rfid.serNum[2] == 226 && rfid.serNum[3] == 118 && rfid.serNum[4] == 242)
       {
         lcd.setCursor(0,1);
         lcd.print("Hello SUNFOUNDER");
@@ -106,7 +113,6 @@ void loop()
   lcd.print("                 ");
   closeDoor();
   rfid.halt();
-  readKey();
 }
 void readKey()
 {
@@ -145,6 +151,7 @@ void readKey()
           lcd.setCursor(0,0);
           lcd.print(" Access Control ");
           closeDoor();
+          correct = 0;
         }
         else
         {
@@ -171,7 +178,7 @@ void readKey()
 void openDoor(){
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, HIGH);
-  delay(200);
+  delay(2000);
   digitalWrite(relayPin, LOW);
   pinMode(relayPin, INPUT);  
 }
