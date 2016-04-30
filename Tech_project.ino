@@ -4,15 +4,14 @@ CHECK PIN 3 PINMODE MAY CASUSE PROBLEMS
 #include <Keypad.h>
 #include <SPI.h>
 #include <RFID.h>
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 #define SS_PIN 10
 #define RST_PIN 9
-#define relayPin 2
+#define relayPin 16
 RFID rfid(SS_PIN, RST_PIN);
 
-LiquidCrystal lcd(3, 8, 14, 15, 16, 17);
-
+LiquidCrystal_I2C lcd(0x27,16,2);
 // Setup variables:
 int serNum0;
 int serNum1;
@@ -41,7 +40,7 @@ int pos = 0;
 //this is the keypad code
 char secretCode[6] = {'1', '2', '3', '4', '5', '6'};
 //this is where the RFID card numbers will be stored
-int card_One[5] = {21, 111, 159, 175, 74}; //card name is sunfounder
+int card_One[5] = {210, 147, 224, 99, 194}; //card name is sunfounder
 
 
 char inputCode[6] = {'0', '0', '0', '0', '0', '0'};
@@ -60,7 +59,8 @@ void setup()
   lcd.setCursor(0,0);
   lcd.print(" Access Control ");
   Wire.onRequest(requestEvent);
-  Wire.onReceive(receiveEvent);   
+  Wire.onReceive(receiveEvent);  
+  lcd.backlight(); 
 }
 
 void loop()
@@ -69,12 +69,21 @@ void loop()
   {
     if (rfid.readCardSerial()) 
     {
-      if(rfid.serNum[0] == card_One[1] && rfid.serNum[1] == card_One[2] && rfid.serNum[2] == card_One[3] && rfid.serNum[3] == card_One[4] && rfid.serNum[4] == card_One[5])
+      if(rfid.serNum[0] == 18 && rfid.serNum[1] == 35 && rfid.serNum[2] == 180 && rfid.serNum[3] == 169 && rfid.serNum[4] == 44)
       {
         lcd.setCursor(0,1);
         lcd.print("Hello SUNFOUNDER");
         openDoor();
         user[9] = 'Card01';
+        Serial.print(rfid.serNum[4]);
+      }
+      if(rfid.serNum[0] == 8 && rfid.serNum[1] == 110 && rfid.serNum[2] == 226 && rfid.serNum[3] == 118 && rfid.serNum[4] == 242)
+      {
+        lcd.setCursor(0,1);
+        lcd.print("Hello SUNFOUNDER");
+        openDoor();
+        user[9] = 'Card01';
+        Serial.print(rfid.serNum[4]);
       }
       else 
       {
@@ -84,6 +93,11 @@ void loop()
         lcd.setCursor(0,1);
         lcd.print("Hello unkown guy!");
         closeDoor();
+        Serial.println(rfid.serNum[0]);
+        Serial.println(rfid.serNum[1]);
+        Serial.println(rfid.serNum[2]);
+        Serial.println(rfid.serNum[3]);
+        Serial.println(rfid.serNum[4]);
         delay(1000);
       }
     }
@@ -157,7 +171,7 @@ void readKey()
 void openDoor(){
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, HIGH);
-  delay(20000);
+  delay(200);
   digitalWrite(relayPin, LOW);
   pinMode(relayPin, INPUT);  
 }
