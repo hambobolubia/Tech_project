@@ -68,7 +68,7 @@ void loop()
 //  if (customKey){
 //    if ()
 //  }
-  readKey();
+  readRfid();
 }
 void readRfid()
 { 
@@ -79,7 +79,7 @@ void readRfid()
       if(rfid.serNum[0] == 18 && rfid.serNum[1] == 35 && rfid.serNum[2] == 180 && rfid.serNum[3] == 169 && rfid.serNum[4] == 44)
       {
         lcd.setCursor(0,1);
-        lcd.print("Hello SUNFOUNDER");
+        lcd.print("Hello NICK      ");
         openDoor();
         user[9] = 'Card01';
         Serial.print(rfid.serNum[4]);
