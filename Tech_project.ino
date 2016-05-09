@@ -64,10 +64,18 @@ void setup()
 }
 void loop()
 {  
-  char customKey = customKeypad.getKey();
-//  if (customKey){
-//    if ()
-//  }
+/*  char customKey = customKeypad.getKey();
+  switch(customKey){
+    case '1' :
+      readRfid();
+      lcd.setCursor(0,0);
+      lcd.print("   Scan Card    ");
+    case '2' :
+      readKey();
+      lcd.setCursor(0,0);
+      lcd.print("   Enter code   ");
+    break;
+ }*/
   readRfid();
 }
 void readRfid()
@@ -119,6 +127,7 @@ void readKey()
   int correct = 0;
   int i;
   char customKey = customKeypad.getKey();
+  while(1){
   if (customKey)
   {
     switch(customKey)
@@ -149,6 +158,7 @@ void readKey()
           delay(2000);
           lcd.clear();
           lcd.setCursor(0,0);
+          loop();
           lcd.print(" Access Control ");
           closeDoor();
           correct = 0;
@@ -172,6 +182,7 @@ void readKey()
         lcd.setCursor(pos,1);
         lcd.print(inputCode[pos]);
         pos ++;
+    }
     }
   }
 }
