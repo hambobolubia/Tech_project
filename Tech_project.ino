@@ -1,4 +1,4 @@
-/**
+  /**
 TODO compleatly rewrite the readkey function getting unxepected behaviour
 **/
 #include <Keypad.h>
@@ -8,7 +8,7 @@ TODO compleatly rewrite the readkey function getting unxepected behaviour
 #include <Wire.h>
 #define SS_PIN 10
 #define RST_PIN 9
-#define relayPin 14
+#define relayPin 8
 RFID rfid(SS_PIN, RST_PIN);
 
 LiquidCrystal_I2C lcd(0x27,16,2);
@@ -20,20 +20,22 @@ int serNum3;
 int serNum4;
 int I2C_Address = 4;
 int byteRead = 0;
+int position = 0;
 
 char recivedInfo[5];
+char* password = "1337";
 
 const byte ROWS = 4; //four rows
 const byte COLS = 4; //four columns
 //define the cymbols on the buttons of the keypads
-char hexaKeys[ROWS][COLS] = {
-  {'1','2','3','4'},
-  {'5','6','7','8'},
-  {'9','A','B','C'},
-  {'D','*','0','#'}
+char Keys[ROWS][COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
 };
-byte rowPins[ROWS] = {7, 6, 5, 4}; //connect to the row pinouts of the keypad
-byte colPins[COLS] = { 3, 2, 1, 0}; //connect to the column pinouts of the keypad
+byte rowPins[ROWS] = {17, 16, 15, 14}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = { 5, 4, 3, 2 }; //connect to the column pinouts of the keypad
 
 int pos = 0;
 //this is where we will define who can open the doors/gate
@@ -47,11 +49,11 @@ char inputCode[6] = {'0', '0', '0', '0', '0', '0'};
 char user[9];
 
 //initialize an instance of class NewKeypad
-Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+Keypad keypad = Keypad( makeKeymap(Keys), rowPins, colPins, ROWS, COLS); 
 
 void setup()
 { 
-  //Serial.begin(9600);
+  Serial.begin(9600);
   Wire.begin(I2C_Address);
   lcd.begin(16, 2);
   SPI.begin(); 
@@ -76,6 +78,19 @@ void loop()
       lcd.print("   Enter code   ");
     break;
  }*/
+  char key = keypad.getKey();
+  Serial.println(key);  
+  if (key == '*' || key == '#'){
+    position = 0;
+    closeDoor();
+  }
+  if (key == password[position]){
+    position ++;
+  }
+  if (position == 4){
+    openDoor();
+  }
+  delay(100);
   readRfid();
 }
 void readRfid()
@@ -93,6 +108,22 @@ void readRfid()
         Serial.print(rfid.serNum[4]);
       }
       else if(rfid.serNum[0] == 8 && rfid.serNum[1] == 110 && rfid.serNum[2] == 226 && rfid.serNum[3] == 118 && rfid.serNum[4] == 242)
+      {
+        lcd.setCursor(0,1);
+        lcd.print("Hello SUNFOUNDER");
+        openDoor();
+        user[9] = 'Card01';
+        Serial.print(rfid.serNum[4]);
+      }
+      else if(rfid.serNum[0] == 2 && rfid.serNum[1] == 0 && rfid.serNum[2] == 192 && rfid.serNum[3] == 169 && rfid.serNum[4] == 107)
+      {
+        lcd.setCursor(0,1);
+        lcd.print("Hello RILEY     ");
+        openDoor();
+        user[9] = 'Card01';
+        Serial.print(rfid.serNum[4]);
+      }
+      else if(rfid.serNum[0] == 66 && rfid.serNum[1] == 192 && rfid.serNum[2] == 188 && rfid.serNum[3] == 169 && rfid.serNum[4] == 151)
       {
         lcd.setCursor(0,1);
         lcd.print("Hello SUNFOUNDER");
@@ -122,7 +153,7 @@ void readRfid()
   closeDoor();
   rfid.halt();
 }
-void readKey()
+/*void readKey()
 {
   int correct = 0;
   int i;
@@ -185,18 +216,21 @@ void readKey()
     }
     }
   }
-}
+}*/
 void openDoor(){
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, HIGH);
+  Serial.println("open");
+  position = 0;  
   delay(2000);
   digitalWrite(relayPin, LOW);
-  pinMode(relayPin, INPUT);  
+  //pinMode(relayPin, INPUT);
 }
 void closeDoor(){
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, LOW);
-  pinMode(relayPin, INPUT);
+  //pinMode(relayPin, INPUT);
+  Serial.println("close");
 }
 void requestEvent()
 {
